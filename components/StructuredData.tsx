@@ -1,27 +1,20 @@
+/**
+ * Minimal, honest structured data for the demo: no invented address, phone
+ * number or opening hours — only facts the demo itself establishes.
+ */
 export function StructuredData() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FurnitureStore',
-    name: 'Kosi Furniture',
-    description: 'Premium furniture store offering modern home decor and furniture',
-    url: 'https://your-domain.netlify.app', // Replace with your actual domain
-    telephone: '+880-XXXX-XXXXXX',
-    email: 'hello@kosi-furniture.com',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: '123 Design Street',
-      addressLocality: 'Furniture District',
-      addressRegion: 'NY',
-      postalCode: '10001',
-      addressCountry: 'US'
-    },
-    openingHours: 'Mo-Fr 09:00-18:00',
-    priceRange: '$$',
-    sameAs: [
-      'https://facebook.com/kosi',
-      'https://instagram.com/kosi',
-      'https://twitter.com/kosi'
-    ]
+    name: 'AL MANARAT AL ANEEQA FACTORY MARBLE & STONE',
+    alternateName: 'مصنع المنارات الأنيقة للرخام والحجر',
+    description:
+      'طاولات وكونسولات من الرخام الطبيعي، جاهزة أو مُفصّلة حسب المقاس. Natural marble tables and consoles, ready-made or made to order.',
+    url: 'https://kosii.netlify.app',
+    inLanguage: ['ar', 'en'],
+    areaServed: { '@type': 'Country', name: 'Saudi Arabia' },
+    currenciesAccepted: 'SAR',
+    priceRange: '2000–7500 SAR',
   }
 
   return (

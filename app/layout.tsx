@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
-import { Montserrat, Roboto } from 'next/font/google'
+import { IBM_Plex_Sans_Arabic, Montserrat, Roboto } from 'next/font/google'
 import './globals.css'
-import { StructuredData } from '@/components/StructuredData';
-import Header from '@/components/layouts/Header';
-import Footer from '@/components/layouts/Footer';
+import { StructuredData } from '@/components/StructuredData'
+import Header from '@/components/layouts/Header'
+import Footer from '@/components/layouts/Footer'
+import { LocaleProvider } from '@/lib/i18n/LocaleProvider'
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, dirFor } from '@/lib/i18n/config'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -18,24 +20,40 @@ const roboto = Roboto({
   display: 'swap',
 })
 
+// Arabic is the primary experience, so it gets a real Arabic typeface rather
+// than a Latin font falling back to a system Arabic default.
+const arabic = IBM_Plex_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-arabic',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: {
-    default: 'Kosi - Premium Furniture Store | Modern Home Decor',
-    template: '%s | Kosi Furniture'
+    default: 'مصنع المنارات الأنيقة للرخام والحجر | AL MANARAT AL ANEEQA FACTORY MARBLE & STONE',
+    template: '%s | مصنع المنارات الأنيقة للرخام والحجر',
   },
-  description: 'Transform your space with our curated collection of premium furniture and home decor. Modern, elegant, and affordable furniture for every room. Free shipping & easy returns.',
-  keywords: ['furniture', 'home decor', 'premium furniture', 'modern furniture', 'living room', 'bedroom', 'dining room', 'office furniture', 'Bangladesh furniture'],
-  authors: [{ name: 'Kosi Furniture' }],
-  creator: 'Kosi Furniture',
-  publisher: 'Kosi Furniture',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL('https://kosii.netlify.app'), // Replace with your actual domain
+  description:
+    'طاولات وكونسولات من الرخام الطبيعي، جاهزة أو مُفصّلة حسب مقاسك. — Natural marble tables and consoles, ready-made or made to order.',
+  keywords: [
+    'رخام',
+    'أثاث رخام',
+    'طاولات رخام',
+    'تفصيل رخام',
+    'marble furniture',
+    'marble dining table',
+    'Saudi marble',
+    'custom marble',
+  ],
+  authors: [{ name: 'AL MANARAT AL ANEEQA FACTORY MARBLE & STONE' }],
+  creator: 'AL MANARAT AL ANEEQA FACTORY MARBLE & STONE',
+  publisher: 'AL MANARAT AL ANEEQA FACTORY MARBLE & STONE',
+  formatDetection: { email: false, address: false, telephone: false },
+  metadataBase: new URL('https://kosii.netlify.app'),
   alternates: {
     canonical: '/',
+    languages: { ar: '/', en: '/' },
   },
   icons: {
     icon: [
@@ -45,31 +63,21 @@ export const metadata: Metadata = {
       { url: '/favicon-64x64.png', sizes: '64x64', type: 'image/png' },
       { url: '/favicon.ico' },
     ],
-    apple: [
-      { url: '/favicon-180x180.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: '/favicon-180x180.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://kosii.netlify.app', // Replace with your actual domain
-    siteName: 'Kosi Furniture',
-    title: 'Kosi - Premium Furniture Store | Modern Home Decor',
-    description: 'Transform your space with our curated collection of premium furniture and home decor.',
-    images: [
-      {
-        url: '/og-image.jpg', // add this image to your public folder
-        width: 1200,
-        height: 630,
-        alt: 'Kosi Furniture - Premium Home Decor',
-      },
-    ],
+    locale: 'ar_SA',
+    alternateLocale: ['en_US'],
+    url: 'https://kosii.netlify.app',
+    siteName: 'AL MANARAT AL ANEEQA FACTORY MARBLE & STONE',
+    title: 'مصنع المنارات الأنيقة للرخام والحجر',
+    description: 'طاولات وكونسولات من الرخام الطبيعي، جاهزة أو مُفصّلة حسب مقاسك.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kosi - Premium Furniture Store',
-    description: 'Transform your space with our curated collection of premium furniture and home decor.',
-    images: ['/og-image.jpg'], // add this image to your public folder
+    title: 'مصنع المنارات الأنيقة للرخام والحجر',
+    description: 'طاولات وكونسولات من الرخام الطبيعي، جاهزة أو مُفصّلة حسب مقاسك.',
   },
   robots: {
     index: true,
@@ -82,11 +90,13 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    // Add your Google Search Console verification code here
-    // google: 'google691dcfd7d854cb7b.html',
-  }
 }
+
+/**
+ * Applies the stored locale before first paint so an English visitor never
+ * sees an Arabic/RTL flash. `LocaleProvider` takes over after hydration.
+ */
+const localeBootstrap = `(function(){try{var q=new URLSearchParams(location.search).get('lang');var l=(q==='en'||q==='ar')?q:localStorage.getItem('${LOCALE_STORAGE_KEY}');if(l==='en'||l==='ar'){var d=document.documentElement;d.lang=l;d.dir=l==='ar'?'rtl':'ltr';}}catch(e){}})();`
 
 export default function RootLayout({
   children,
@@ -94,14 +104,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${roboto.variable}`}>
+    <html
+      lang={DEFAULT_LOCALE}
+      dir={dirFor(DEFAULT_LOCALE)}
+      className={`${montserrat.variable} ${roboto.variable} ${arabic.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <StructuredData />
+        <script dangerouslySetInnerHTML={{ __html: localeBootstrap }} />
       </head>
       <body className="font-secondary antialiased">
-        <Header/>
-        {children}
-        <Footer/>
+        <LocaleProvider>
+          <Header />
+          {children}
+          <Footer />
+        </LocaleProvider>
       </body>
     </html>
   )

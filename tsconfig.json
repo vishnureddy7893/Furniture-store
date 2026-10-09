@@ -23,5 +23,7 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  // "New folder" is a committed duplicate copy of this project that predates
+  // the marble work; it is not part of the build and is excluded from checking.
+  "exclude": ["node_modules", "New folder"]
 }

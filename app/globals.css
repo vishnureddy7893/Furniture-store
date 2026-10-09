@@ -3,12 +3,105 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Admin chart ramp — Bklit UI token convention, warm marble theme.
+       See docs/DEMO-COMPLETION.md for why the registry itself is not installed. */
+    --chart-1: #7A5E3F;
+    --chart-2: #9C7A54;
+    --chart-3: #BCA083;
+    --chart-4: #D2C5B2;
+    --chart-5: #E4DCCF;
+  }
+
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
-  
+
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-sand-100 text-ink antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Arabic is the primary experience: swap the whole type stack at the
+     document level rather than per-component. */
+  html[lang='ar'] body {
+    @apply font-arabic;
+  }
+
+  html[lang='ar'] .font-primary,
+  html[lang='ar'] .font-secondary {
+    font-family: theme('fontFamily.arabic');
+  }
+
+  /* Arabic headings sit slightly looser and never use Latin letter-spacing. */
+  html[lang='ar'] h1,
+  html[lang='ar'] h2,
+  html[lang='ar'] h3 {
+    letter-spacing: 0;
+    line-height: 1.4;
+  }
+
+  html[lang='ar'] .tracking-editorial,
+  html[lang='ar'] .tracking-widest,
+  html[lang='ar'] .tracking-wide {
+    letter-spacing: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-bronze ring-offset-2 ring-offset-sand-100;
+  }
+
+  ::selection {
+    @apply bg-bronze/20 text-ink;
+  }
+}
+
+@layer components {
+  /* Editorial eyebrow used above section headings. */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-editorial text-bronze-deep;
+  }
+
+  /* Primary / secondary buttons in the marble language. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5
+           text-sm font-semibold transition-all duration-300
+           disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink text-sand-50 hover:bg-ink-soft;
+  }
+
+  .btn-secondary {
+    @apply btn border border-ink/20 bg-transparent text-ink hover:border-ink hover:bg-ink hover:text-sand-50;
+  }
+
+  .btn-bronze {
+    @apply btn bg-bronze text-white hover:bg-bronze-deep;
+  }
+
+  .surface {
+    @apply rounded-2xl border border-sand-300 bg-white;
+  }
+
+  .field-label {
+    @apply mb-2 block text-sm font-medium text-ink-soft;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-ink
+           placeholder:text-ink-muted/70 transition-colors
+           focus:border-bronze focus:outline-none focus:ring-1 focus:ring-bronze;
+    text-align: start;
   }
 }
 
@@ -19,32 +112,58 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* Flip a directional glyph (arrows, chevrons) when the document is RTL,
+     so no component has to branch on locale itself. */
+  [dir='rtl'] .rtl-flip {
+    transform: scaleX(-1);
+  }
+
+  /* Fine stone grain, used behind hero and story sections. */
+  .stone-grain {
+    background-image: radial-gradient(
+      rgba(30, 27, 24, 0.05) 1px,
+      transparent 1px
+    );
+    background-size: 4px 4px;
+  }
+
+  /* Every marble surface is filled through an SVG turbulence filter, which is
+     expensive to rasterise. Off-screen scenes in a grid do not need to be
+     painted at all until they are scrolled near, and the box size comes from
+     an aspect ratio rather than from content, so skipping them cannot shift
+     layout. */
+  .scene-defer {
+    content-visibility: auto;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
-/* --- Footer Agency Name Animation --- */
-@layer utilities {
-  .animated-name {
-    position: relative;
-    transition: all 0.3s ease;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
-  
-  .animated-name:hover {
-    color: #FF4B37; 
-    transform: translateY(-1px);
-  }
-  
-  .animated-name::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -2px;
-    left: 0;
-    background-color: #FF4B37; 
-    transition: width 0.3s ease;
-  }
-  
-  .animated-name:hover::after {
-    width: 100%;
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

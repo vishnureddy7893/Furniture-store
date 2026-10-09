@@ -6,9 +6,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/checkout', '/order-success', '/api/'],
+        disallow: ['/admin', '/checkout', '/order-success', '/api/'],
       },
     ],
-    sitemap: 'https://kosii.netlify.app/sitemap.xml', // Replace with your actual domain
+    sitemap: 'https://kosii.netlify.app/sitemap.xml',
   }
 }

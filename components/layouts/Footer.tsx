@@ -1,368 +1,162 @@
 'use client'
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import {
-    Facebook,
-    Twitter,
-    Instagram,
-    Linkedin,
-    Phone,
-    MapPin,
-    Clock,
-    Mail,
-    Send,
-    Heart,
-    ArrowUp
-} from "lucide-react"
-import Logo from "@/public/images/kosi-logo.png"
+import { useState } from 'react'
+import Link from 'next/link'
+import { ArrowRight, Instagram, Mail, MapPin, Phone } from 'lucide-react'
+import BrandMark from '@/components/ui/BrandMark'
+import { useI18n } from '@/lib/i18n/LocaleProvider'
+import { CATEGORIES } from '@/lib/mock-data'
+import type { DictKey } from '@/lib/i18n/dictionaries'
+
+const exploreLinks: { key: DictKey; href: string }[] = [
+  { key: 'nav.shop', href: '/shop' },
+  { key: 'nav.customize', href: '/customize' },
+  { key: 'nav.portfolio', href: '/portfolio' },
+  { key: 'nav.admin', href: '/admin' },
+]
+
+const supportLinks: { key: DictKey; href: string }[] = [
+  { key: 'success.trackOrder', href: '/track-order' },
+  { key: 'footer.shipping', href: '/track-order' },
+  { key: 'footer.care', href: '/portfolio' },
+  { key: 'footer.faq', href: '/track-order' },
+]
 
 export default function Footer() {
-    const [email, setEmail] = useState("")
-    const [isSubscribed, setIsSubscribed] = useState(false)
+  const { t, l } = useI18n()
+  const [subscribed, setSubscribed] = useState(false)
 
-    const handleNewsletterSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        if (email) {
-            setIsSubscribed(true)
-            setEmail("")
-            setTimeout(() => setIsSubscribed(false), 3000)
-        }
-    }
+  return (
+    <footer className="mt-24 border-t border-sand-300 bg-sand-50">
+      <div className="container py-14 md:py-20">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
+          {/* Brand */}
+          <div className="lg:col-span-4">
+            <BrandMark size="lg" />
+            <p className="mt-3 text-sm text-bronze-deep">{t('brand.tagline')}</p>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-soft">
+              {t('footer.about')}
+            </p>
+            <ul className="mt-6 space-y-2.5 text-sm text-ink-soft">
+              <li className="flex items-center gap-2.5">
+                <MapPin className="h-4 w-4 shrink-0 text-bronze" aria-hidden />
+                <span>{l({ ar: 'الرياض، المملكة العربية السعودية', en: 'Riyadh, Saudi Arabia' })}</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="h-4 w-4 shrink-0 text-bronze" aria-hidden />
+                <span dir="ltr">+966 5X XXX XXXX</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="h-4 w-4 shrink-0 text-bronze" aria-hidden />
+                <span dir="ltr">info@almanarat-aneeqa.demo</span>
+              </li>
+            </ul>
+          </div>
 
-    const footerLinks = {
-        services: [
-            { name: "Interior Design", href: "/services/interior-design" },
-            { name: "Custom Furniture", href: "/services/custom-furniture" },
-            { name: "Home Consultation", href: "/services/consultation" },
-            { name: "Delivery & Setup", href: "/services/delivery" }
-        ],
-        about: [
-            { name: "Our Story", href: "/about" },
-            { name: "Quality Promise", href: "/about/quality" },
-            { name: "Design Team", href: "/about/team" },
-            { name: "Careers", href: "/careers" }
-        ],
-        support: [
-            { name: "Help Center", href: "/support" },
-            { name: "Contact Us", href: "/contact" },
-            { name: "Shipping Info", href: "/shipping" },
-            { name: "Returns & Exchanges", href: "/returns" }
-        ],
-        legal: [
-            { name: "Privacy Policy", href: "/privacy" },
-            { name: "Terms of Service", href: "/terms" },
-            { name: "Cookie Policy", href: "/cookies" },
-            { name: "Accessibility", href: "/accessibility" }
-        ]
-    }
+          {/* Explore */}
+          <nav className="lg:col-span-2" aria-label={t('footer.explore')}>
+            <h2 className="eyebrow mb-4">{t('footer.explore')}</h2>
+            <ul className="space-y-2.5 text-sm">
+              {exploreLinks.map((link) => (
+                <li key={link.key}>
+                  <Link href={link.href} className="text-ink-soft transition-colors hover:text-ink">
+                    {t(link.key)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-    const socialLinks = [
-        {
-            name: "Facebook",
-            icon: Facebook,
-            href: "https://facebook.com/kosi",
-            color: "hover:text-blue-600 hover:bg-blue-50"
-        },
-        {
-            name: "Instagram",
-            icon: Instagram,
-            href: "https://instagram.com/kosi",
-            color: "hover:text-pink-600 hover:bg-pink-50"
-        },
-        {
-            name: "Twitter",
-            icon: Twitter,
-            href: "https://twitter.com/kosi",
-            color: "hover:text-blue-400 hover:bg-blue-50"
-        },
-        {
-            name: "LinkedIn",
-            icon: Linkedin,
-            href: "https://linkedin.com/company/kosi",
-            color: "hover:text-blue-700 hover:bg-blue-50"
-        }
-    ]
+          {/* Categories */}
+          <nav className="lg:col-span-3" aria-label={t('home.categories.title')}>
+            <h2 className="eyebrow mb-4">{t('home.categories.title')}</h2>
+            <ul className="space-y-2.5 text-sm">
+              {CATEGORIES.slice(0, 5).map((category) => (
+                <li key={category.slug}>
+                  <Link
+                    href={`/shop?category=${category.slug}`}
+                    className="text-ink-soft transition-colors hover:text-ink"
+                  >
+                    {l(category.name)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-    return (
-        <footer className="bg-gradient-to-b from-gray-50 to-white border-t border-gray-200">
-            <div className="container">
-                {/* Main Footer Content */}
-                <div className="py-16 md:py-20">
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
-                        {/* Brand & Newsletter Section */}
-                        <div className="lg:col-span-2 space-y-8">
-                            {/* Logo & Description */}
-                            <div>
-                                <Link href="/" className="inline-block mb-6">
-                                    <Image
-                                        src={Logo}
-                                        alt="Kosi - Premium Furniture"
-                                        className="h-10 w-auto"
-                                        width={120}
-                                        height={40}
-                                    />
-                                </Link>
-                                <p className="text-gray-600 leading-relaxed max-w-md">
-                                    Transform your space with our curated collection of premium furniture and home decor.
-                                    Creating beautiful, functional environments since 2020.
-                                </p>
-                            </div>
-
-                            {/* Newsletter Signup */}
-                            <div>
-                                <h4 className="font-primary text-xl font-bold text-primary mb-4">
-                                    Stay Updated
-                                </h4>
-                                <p className="text-gray-600 mb-6">
-                                    Get the latest trends, exclusive offers, and design inspiration delivered to your inbox.
-                                </p>
-
-                                <form onSubmit={handleNewsletterSubmit} className="space-y-4">
-                                    <div className="relative">
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="Enter your email address"
-                                            className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                                            required
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={isSubscribed}
-                                            className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-md transition-all duration-200 ${isSubscribed
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-primary hover:bg-primary/90 text-white hover:scale-105'
-                                                }`}
-                                        >
-                                            {isSubscribed ? (
-                                                <span className="text-sm">✓</span>
-                                            ) : (
-                                                <Send className="w-4 h-4" />
-                                            )}
-                                        </button>
-                                    </div>
-                                    {isSubscribed && (
-                                        <p className="text-green-600 text-sm font-medium">
-                                            ✓ Successfully subscribed to our newsletter!
-                                        </p>
-                                    )}
-                                </form>
-                            </div>
-
-                            {/* Contact Info */}
-                            <div className="space-y-4">
-                                <h4 className="font-primary text-lg font-bold text-primary">Get in Touch</h4>
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3 text-gray-600">
-                                        <MapPin className="w-5 h-5 text-primary" />
-                                        <span>123 Design Street, Furniture District, NY 10001</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-gray-600">
-                                        <Phone className="w-5 h-5 text-primary" />
-                                        <span>+1 (555) 123-4567</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-gray-600">
-                                        <Mail className="w-5 h-5 text-primary" />
-                                        <span>hello@kosi-furniture.com</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-gray-600">
-                                        <Clock className="w-5 h-5 text-primary" />
-                                        <span>Mon-Fri 9AM-6PM, Sat-Sun 10AM-4PM</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Links Sections */}
-                        <div className="lg:col-span-3">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-
-                                {/* Services */}
-                                <div>
-                                    <h5 className="font-primary text-lg font-bold text-primary mb-6">
-                                        Services
-                                    </h5>
-                                    <ul className="space-y-3">
-                                        {footerLinks.services.map((link) => (
-                                            <li key={link.name}>
-                                                <Link
-                                                    href={link.href}
-                                                    className="text-gray-600 hover:text-primary transition-colors duration-200 text-sm"
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* About */}
-                                <div>
-                                    <h5 className="font-primary text-lg font-bold text-primary mb-6">
-                                        About
-                                    </h5>
-                                    <ul className="space-y-3">
-                                        {footerLinks.about.map((link) => (
-                                            <li key={link.name}>
-                                                <Link
-                                                    href={link.href}
-                                                    className="text-gray-600 hover:text-primary transition-colors duration-200 text-sm"
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* Support */}
-                                <div>
-                                    <h5 className="font-primary text-lg font-bold text-primary mb-6">
-                                        Support
-                                    </h5>
-                                    <ul className="space-y-3">
-                                        {footerLinks.support.map((link) => (
-                                            <li key={link.name}>
-                                                <Link
-                                                    href={link.href}
-                                                    className="text-gray-600 hover:text-primary transition-colors duration-200 text-sm"
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* Legal */}
-                                <div>
-                                    <h5 className="font-primary text-lg font-bold text-primary mb-6">
-                                        Legal
-                                    </h5>
-                                    <ul className="space-y-3">
-                                        {footerLinks.legal.map((link) => (
-                                            <li key={link.name}>
-                                                <Link
-                                                    href={link.href}
-                                                    className="text-gray-600 hover:text-primary transition-colors duration-200 text-sm"
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Social Media & Awards Section */}
-                <div className="py-8 border-t border-gray-200">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-
-                        {/* Social Links */}
-                        <div className="flex items-center gap-6">
-                            <span className="font-medium text-gray-600">Follow Us:</span>
-                            <div className="flex items-center gap-3">
-                                {socialLinks.map((social) => {
-                                    const IconComponent = social.icon
-                                    return (
-                                        <a
-                                            key={social.name}
-                                            href={social.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`p-3 bg-white border border-gray-200 rounded-lg transition-all duration-200 transform hover:scale-110 hover:shadow-lg ${social.color}`}
-                                            aria-label={social.name}
-                                        >
-                                            <IconComponent className="w-5 h-5" />
-                                        </a>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Awards/Certifications */}
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                                    <span className="text-yellow-600 font-bold">★</span>
-                                </div>
-                                <div className="text-sm">
-                                    <p className="font-semibold text-gray-800">4.9/5 Rating</p>
-                                    <p className="text-gray-600">2,500+ Reviews</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                    <span className="text-green-600 font-bold">✓</span>
-                                </div>
-                                <div className="text-sm">
-                                    <p className="font-semibold text-gray-800">Certified</p>
-                                    <p className="text-gray-600">Eco-Friendly</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Footer */}
-                <div className="py-6 border-t border-gray-200">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-
-                        <div className="flex items-center justify-center gap-2 text-gray-600 text-sm">
-                            <span>© 2024 Kosi Furniture. Crafted with</span>
-                            <Heart className="w-4 h-4 text-red-500 fill-current animate-pulse" />
-                            <span>by</span>
-                            <Link
-                                href="https://bebshardost.com"
-                                className="font-semibold text-primary hover:text-secondary transition-colors duration-200 relative group"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                BebsharDost
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-secondary transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
-                        </div>
-
-                        <div className="flex items-center gap-8 text-sm">
-                            <Link
-                                href="/"
-                                className="text-gray-600 hover:text-primary transition-colors duration-200"
-                            >
-                                Terms of Service
-                            </Link>
-                            <Link
-                                href="/"
-                                className="text-gray-600 hover:text-primary transition-colors duration-200"
-                            >
-                                Privacy Policy
-                            </Link>
-                            <Link
-                                href="/"
-                                className="text-gray-600 hover:text-primary transition-colors duration-200"
-                            >
-                                Cookie Settings
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Back to Top Button */}
-            <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="fixed bottom-8 right-8 flex items-center justify-center p-3 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40"
-                aria-label="Back to top"
+          {/* Newsletter + support */}
+          <div className="lg:col-span-3">
+            <h2 className="eyebrow mb-4">{t('footer.newsletter')}</h2>
+            <p className="mb-3 text-sm text-ink-soft">{t('footer.newsletterBody')}</p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                setSubscribed(true)
+              }}
+              className="flex gap-2"
             >
-                <ArrowUp className="w-4 h-4" />
-            </button>
-        </footer>
-    )
+              <label htmlFor="footer-email" className="sr-only">
+                {t('footer.emailPlaceholder')}
+              </label>
+              <input
+                id="footer-email"
+                type="email"
+                required
+                dir="ltr"
+                placeholder={t('footer.emailPlaceholder')}
+                className="field py-2.5 text-sm"
+              />
+              <button
+                type="submit"
+                aria-label={t('footer.subscribe')}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink text-sand-50 transition-colors hover:bg-ink-soft"
+              >
+                <ArrowRight className="h-4 w-4 rtl-flip" aria-hidden />
+              </button>
+            </form>
+            {subscribed && (
+              <p className="mt-2 text-xs font-medium text-verde" role="status">
+                {t('footer.subscribed')}
+              </p>
+            )}
+
+            <h2 className="eyebrow mb-3 mt-8">{t('footer.support')}</h2>
+            <ul className="space-y-2.5 text-sm">
+              {supportLinks.map((link) => (
+                <li key={link.key}>
+                  <Link href={link.href} className="text-ink-soft transition-colors hover:text-ink">
+                    {t(link.key)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-12 rounded-xl border border-bronze/20 bg-bronze-wash px-4 py-3">
+          <p className="text-xs leading-relaxed text-bronze-deep">
+            <span className="me-2 rounded bg-bronze px-1.5 py-0.5 font-semibold text-white">
+              {t('common.demoBadge')}
+            </span>
+            {t('footer.demoDisclaimer')}
+          </p>
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-sand-300 pt-8 text-xs text-ink-muted sm:flex-row">
+          <p className="text-center sm:text-start">
+            © {new Date().getFullYear()} {t('brand.name')} — {t('footer.rights')}
+          </p>
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="flex items-center gap-2 transition-colors hover:text-ink"
+          >
+            <Instagram className="h-4 w-4" aria-hidden />
+            Instagram
+          </a>
+        </div>
+      </div>
+    </footer>
+  )
 }

@@ -2,6 +2,7 @@
   "name": "kosi-furniture-store",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
@@ -9,10 +10,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "animejs": "^4.5.0",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.552.0",
+    "motion": "^13.2.0",
     "next": "15.5.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

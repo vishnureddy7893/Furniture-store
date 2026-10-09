@@ -1,337 +1,283 @@
 'use client'
 
-import { useState, useEffect, useRef } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import {
-  Search,
-  ShoppingCart,
-  Trash2,
-  User,
-  Menu,
-  X,
-ShoppingBag,
-  Shield,
-  Truck,
-  RefreshCw,
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Menu, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
+import { useCartStore } from '@/lib/store/cart-store'
+import BrandMark from '@/components/ui/BrandMark'
+import { useI18n } from '@/lib/i18n/LocaleProvider'
+import { useHydrated } from '@/lib/hooks/useHydrated'
+import LocaleSwitcher from '@/components/ui/LocaleSwitcher'
+import PieceScene from '@/components/marble/PieceScene'
+import type { DictKey } from '@/lib/i18n/dictionaries'
+import { cn } from '@/lib/utils'
 
-} from "lucide-react"
-import { useCartStore } from "@/lib/store/cart-store"
-import Logo from "@/public/images/kosi-logo.png"
-
-const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Shop", href: "#shop" },
-  { name: "Blog", href: "/" },
-  { name: "About", href: "/" },
-  { name: "Contact", href: "/" }
+const navLinks: { key: DictKey; href: string }[] = [
+  { key: 'nav.shop', href: '/shop' },
+  { key: 'nav.customize', href: '/customize' },
+  { key: 'nav.portfolio', href: '/portfolio' },
+  { key: 'nav.admin', href: '/admin' },
 ]
 
 export default function Header() {
-  const { cartItems, totalQuantity, increaseQuantity, decreaseQuantity, removeFromCart } = useCartStore()
+  const { t, l, price } = useI18n()
+  const pathname = usePathname()
+  const store = useCartStore()
+  const hydrated = useHydrated()
+  const { increaseQuantity, decreaseQuantity, removeFromCart } = store
+  // Before rehydration the persisted cart is unknown, so render it as empty
+  // — matching the server output — and fill it in on the next tick.
+  const cartItems = hydrated ? store.cartItems : []
+  const totalQuantity = hydrated ? store.totalQuantity : 0
+  const totalPrice = hydrated ? store.totalPrice : 0
+
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-
   const cartRef = useRef<HTMLDivElement>(null)
 
-  // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    const handleScroll = () => setIsScrolled(window.scrollY > 16)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close cart when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
         setIsCartOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Prevent body scroll when mobile menu is open
+  // Close the overlays whenever navigation happens.
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
+    setIsMobileMenuOpen(false)
+    setIsCartOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : ''
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = ''
     }
   }, [isMobileMenuOpen])
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setIsMobileMenuOpen(false)
+      setIsCartOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href)
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
-        : 'bg-white'
-        }`}
+      className={cn(
+        'sticky top-0 z-50 border-b transition-colors duration-300',
+        isScrolled
+          ? 'border-sand-300 bg-sand-50/90 backdrop-blur-md'
+          : 'border-transparent bg-sand-100',
+      )}
     >
-      <div className="container py-4 lg:py-6">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <div className="nav-logo flex-shrink-0">
-            <Link href="/" className="block transition-transform hover:scale-105 duration-200">
-              <Image
-                className="h-8 md:h-10 w-auto"
-                src={Logo}
-                alt="Kosi - Premium Furniture Store"
-                width={120}
-                height={40}
-                priority
-              />
+      <div className="container flex h-[88px] items-center justify-between gap-4 md:h-[104px]">
+        {/* Brand */}
+        <Link href="/" aria-label={t('brand.name')} className="shrink-0">
+          <BrandMark size="sm" className="md:hidden" />
+          <BrandMark size="md" className="hidden md:flex" />
+        </Link>
+
+        {/* Desktop navigation */}
+        <nav className="hidden items-center gap-8 lg:flex" aria-label={t('nav.menu')}>
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              className={cn(
+                'relative text-sm font-medium transition-colors hover:text-ink',
+                isActive(link.href) ? 'text-ink' : 'text-ink-soft',
+              )}
+            >
+              {t(link.key)}
+              {isActive(link.href) && (
+                <span className="absolute -bottom-1.5 inset-x-0 block h-px bg-bronze" />
+              )}
             </Link>
-          </div>
+          ))}
+        </nav>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:block">
-            <ul className="flex items-center space-x-8 xl:space-x-12">
-              {navLinks.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    className="relative font-secondary font-medium text-primary hover:text-secondary transition-colors duration-300 group"
-                    href={link.href}
-                  >
-                    {link.name}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-secondary transition-all duration-300 group-hover:w-full"></span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+        <div className="flex items-center gap-2 md:gap-3">
+          <LocaleSwitcher className="hidden sm:inline-flex" />
 
-          {/* Action Icons */}
-          <div className="flex items-center space-x-3 md:space-x-4">
-            {/* Search Icon */}
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-              <Search className="text-primary w-5 h-5" />
+          {/* Mini cart */}
+          <div className="relative" ref={cartRef}>
+            <button
+              type="button"
+              onClick={() => setIsCartOpen((v) => !v)}
+              aria-expanded={isCartOpen}
+              aria-label={`${t('common.cart')} (${totalQuantity})`}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-sand-300 bg-white text-ink transition-colors hover:border-ink"
+            >
+              <ShoppingBag className="h-[18px] w-[18px]" aria-hidden />
+              {totalQuantity > 0 && (
+                <span className="absolute -top-1 -end-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-bronze px-1 text-[10px] font-bold text-white">
+                  {totalQuantity}
+                </span>
+              )}
             </button>
 
-            {/* Cart Icon with Dropdown */}
-            <div className="relative" ref={cartRef}>
-              <button
-                onClick={() => setIsCartOpen(!isCartOpen)}
-                className="relative p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-              >
-                <ShoppingCart className="text-primary w-5 h-5" />
-                {totalQuantity > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-productPrice text-white text-xs font-bold min-w-[20px] h-5 rounded-full flex items-center justify-center animate-pulse">
-                    {totalQuantity}
-                  </span>
-                )}
-              </button>
+            {isCartOpen && (
+              <div className="absolute end-0 top-12 z-50 w-[min(92vw,22rem)] overflow-hidden rounded-2xl border border-sand-300 bg-white shadow-stone-lg">
+                <div className="flex items-center justify-between border-b border-sand-200 px-4 py-3">
+                  <p className="font-semibold text-ink">{t('common.cart')}</p>
+                  <button
+                    type="button"
+                    onClick={() => setIsCartOpen(false)}
+                    aria-label={t('common.close')}
+                    className="text-ink-muted hover:text-ink"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
+                </div>
 
-              {/* Enhanced Cart Dropdown */}
-              {isCartOpen && (
-                <div className="absolute right-0 mt-3 w-80 bg-white border border-gray-200 shadow-2xl rounded-xl p-0 z-50 overflow-hidden">
-                  {/* Cart Header */}
-                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="font-bold text-lg text-primary">Shopping Cart</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'} in cart
-                    </p>
+                {cartItems.length === 0 ? (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-sm text-ink-soft">{t('cart.empty.body')}</p>
                   </div>
-
-                  {/* Cart Items */}
-                  <div className="max-h-80 overflow-y-auto">
-                    {cartItems.length === 0 ? (
-                      <div className="px-6 py-8 text-center">
-                        <ShoppingCart className="mx-auto text-4xl text-gray-300 mb-4" />
-                        <p className="text-gray-500 font-medium mb-2">Your cart is empty</p>
-                        <p className="text-sm text-gray-400 mb-6">Add some items to get started</p>
-                        <Link
-                          href="/products"
-                          className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
-                          onClick={() => setIsCartOpen(false)}
-                        >
-                          <ShoppingBag className="w-4 h-4" />
-                          Start Shopping
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="px-4 py-4">
-                        {cartItems.map((item, index) => (
-                          <div key={item.id} className={`flex items-center gap-4 py-4 ${index !== cartItems.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                            {/* Product Image */}
-                            <div className="flex-shrink-0">
-                              <Image
-                                src={item.image}
-                                alt={item.title}
-                                width={64}
-                                height={64}
-                                className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                              />
-                            </div>
-
-                            {/* Product Details */}
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-sm text-primary truncate">{item.title}</h4>
-                              <p className="text-productPrice font-bold text-sm mt-1">
-                                ${(item.price * item.quantity).toFixed(2)}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                ${item.price} each
-                              </p>
-                            </div>
-
-                            {/* Quantity Controls */}
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="flex items-center border border-gray-200 rounded-lg">
-                                <button
-                                  className="p-1 hover:bg-gray-100 rounded-l-lg transition-colors duration-200"
-                                  onClick={() => decreaseQuantity(item.id)}
-                                >
-                                  <span className="text-primary font-bold text-sm w-6 h-6 flex items-center justify-center">−</span>
-                                </button>
-                                <span className="px-3 py-1 text-sm font-medium bg-gray-50 min-w-[40px] text-center">
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  className="p-1 hover:bg-gray-100 rounded-r-lg transition-colors duration-200"
-                                  onClick={() => increaseQuantity(item.id)}
-                                >
-                                  <span className="text-primary font-bold text-sm w-6 h-6 flex items-center justify-center">+</span>
-                                </button>
-                              </div>
-
+                ) : (
+                  <>
+                    <ul className="max-h-72 divide-y divide-sand-200 overflow-y-auto">
+                      {cartItems.map((item) => (
+                        <li key={item.id} className="flex gap-3 px-4 py-3">
+                          <span className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand-100">
+                            {item.config && (
+                              <PieceScene config={item.config} view="scene" className="h-full w-full" />
+                            )}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-ink">
+                              {item.name ? l(item.name) : item.title}
+                            </p>
+                            <p className="mt-0.5 text-xs text-ink-muted">{price(item.price)}</p>
+                            <div className="mt-1.5 flex items-center gap-1.5">
                               <button
-                                className="p-1 hover:bg-red-50 rounded-lg text-red-500 hover:text-red-700 transition-colors duration-200"
-                                onClick={() => removeFromCart(item.id)}
-                                title="Remove item"
+                                type="button"
+                                onClick={() => decreaseQuantity(item.id)}
+                                aria-label={t('cart.decrease')}
+                                className="flex h-6 w-6 items-center justify-center rounded border border-sand-300 text-ink-soft hover:border-ink"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Minus className="h-3 w-3" aria-hidden />
+                              </button>
+                              <span className="min-w-6 text-center text-xs font-medium">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => increaseQuantity(item.id)}
+                                aria-label={t('cart.increase')}
+                                className="flex h-6 w-6 items-center justify-center rounded border border-sand-300 text-ink-soft hover:border-ink"
+                              >
+                                <Plus className="h-3 w-3" aria-hidden />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeFromCart(item.id)}
+                                aria-label={t('cart.remove')}
+                                className="ms-auto text-ink-muted hover:text-red-600"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </div>
                           </div>
-                        ))}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="border-t border-sand-200 px-4 py-3">
+                      <div className="mb-3 flex items-center justify-between text-sm">
+                        <span className="text-ink-soft">{t('common.subtotal')}</span>
+                        <span className="font-semibold text-ink">{price(totalPrice)}</span>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Cart Footer */}
-                  {cartItems.length > 0 && (
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold text-primary">Total:</span>
-                        <span className="text-xl font-bold text-productPrice">
-                          ${totalPrice.toFixed(2)}
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        <Link
-                          href="/checkout"
-                          className="block w-full bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-center"
-                          onClick={() => setIsCartOpen(false)}
-                        >
-                          Checkout Now
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link href="/cart" className="btn-secondary py-2.5 text-xs">
+                          {t('common.cart')}
                         </Link>
-                        <Link
-                          href="/cart"
-                          className="block w-full border-2 border-primary text-primary hover:bg-primary hover:text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 text-center"
-                          onClick={() => setIsCartOpen(false)}
-                        >
-                          View Full Cart
+                        <Link href="/checkout" className="btn-primary py-2.5 text-xs">
+                          {t('cart.checkout')}
                         </Link>
-                      </div>
-
-                      {/* Trust badges in cart */}
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="grid grid-cols-3 gap-2 text-center">
-                          <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mb-1">
-                              <Shield className="w-3 h-3 text-green-600" />
-                            </div>
-                            <span className="text-xs text-gray-600">Secure</span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mb-1">
-                              <Truck className="w-3 h-3 text-blue-600" />
-                            </div>
-                            <span className="text-xs text-gray-600">Free Shipping</span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mb-1">
-                              <RefreshCw className="w-3 h-3 text-purple-600" />
-                            </div>
-                            <span className="text-xs text-gray-600">Easy Returns</span>
-                          </div>
-                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* User Icon */}
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-              <User className="text-primary w-5 h-5" />
-            </button>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="lg:hidden p-2 rounded-lg bg-primary hover:bg-primary/90 text-white transition-colors duration-200"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Mobile menu trigger */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label={t('nav.menu')}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sand-300 bg-white text-ink lg:hidden"
+          >
+            <Menu className="h-[18px] w-[18px]" aria-hidden />
+          </button>
         </div>
       </div>
 
-      {/* Enhanced Mobile Menu */}
+      {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden">
-          <div className="fixed right-0 top-0 h-full w-80 max-w-full bg-white shadow-2xl">
-            {/* Mobile Menu Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <Image
-                className="h-8 w-auto"
-                src={Logo}
-                alt="Kosi"
-                width={80}
-                height={32}
-              />
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            aria-label={t('common.close')}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+          />
+          <div className="absolute inset-y-0 end-0 flex h-full w-[min(84vw,20rem)] flex-col bg-sand-50 shadow-stone-lg">
+            <div className="flex items-center justify-between border-b border-sand-200 px-5 py-4">
+              <BrandMark size="sm" />
               <button
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
+                aria-label={t('nav.close')}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-sand-300 text-ink"
               >
-                <X className="w-6 h-6 text-primary" />
+                <X className="h-4 w-4" aria-hidden />
               </button>
             </div>
-
-            {/* Mobile Navigation Links */}
-            <nav className="px-6 py-8">
-              <ul className="space-y-6">
-                {navLinks.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      className="block text-lg font-medium text-primary hover:text-secondary transition-colors duration-200 py-2"
-                      href={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            <nav className="flex flex-col gap-1 p-4" aria-label={t('nav.menu')}>
+              <Link
+                href="/"
+                className="rounded-xl px-3 py-3 text-base font-medium text-ink-soft hover:bg-sand-200 hover:text-ink"
+              >
+                {t('nav.home')}
+              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
+                  className={cn(
+                    'rounded-xl px-3 py-3 text-base font-medium hover:bg-sand-200 hover:text-ink',
+                    isActive(link.href) ? 'bg-sand-200 text-ink' : 'text-ink-soft',
+                  )}
+                >
+                  {t(link.key)}
+                </Link>
+              ))}
             </nav>
-
-            {/* Mobile Menu Footer */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200 bg-gray-50">
-              <p className="text-sm text-gray-600 text-center">
-                © 2024 Kosi. Premium Furniture Store
-              </p>
+            <div className="mt-auto border-t border-sand-200 p-4">
+              <LocaleSwitcher className="w-full justify-center" />
             </div>
           </div>
         </div>

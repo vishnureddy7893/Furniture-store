@@ -2,24 +2,19 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Kosi Furniture - Premium Furniture Store',
-    short_name: 'Kosi Furniture',
-    description: 'Transform your space with premium furniture and home decor',
+    name: 'مصنع المنارات الأنيقة للرخام والحجر — AL MANARAT AL ANEEQA FACTORY MARBLE & STONE',
+    short_name: 'مصنع المنارات الأنيقة للرخام والحجر',
+    description: 'طاولات وكونسولات من الرخام الطبيعي، جاهزة أو مُفصّلة حسب مقاسك.',
+    lang: 'ar',
+    dir: 'rtl',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#2B303A',
+    background_color: '#F6F2EC',
+    theme_color: '#1E1B18',
+    // Only icons that actually exist in /public, so nothing 404s.
     icons: [
-      {
-        src: '/icon-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: '/icon-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
+      { src: '/favicon-64x64.png', sizes: '64x64', type: 'image/png' },
+      { src: '/favicon-180x180.png', sizes: '180x180', type: 'image/png' },
     ],
   }
 }

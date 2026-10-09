@@ -1,3 +1,13 @@
+> **Note — this repository now hosts the client demo for**
+> **AL MANARAT AL ANEEQA FACTORY MARBLE & STONE / مصنع المنارات الأنيقة للرخام والحجر.**
+> It has been transformed into an Arabic-first demo for a premium Saudi
+> natural-marble furniture brand. All products, prices, orders and custom
+> requests are mock data; no payment, shipping or messaging service is
+> contacted. See [`docs/DEMO-COMPLETION.md`](docs/DEMO-COMPLETION.md) for what
+> was built and [`docs/IMPLEMENTATION-PLAN.md`](docs/IMPLEMENTATION-PLAN.md)
+> for how. The sections below describe the original storefront and are kept
+> for reference.
+
 > 💼 A project by [BebsharDost](https://bebshardost.com) - Your Digital Dost
 
 # 🛋️ Kosi Furniture Store - Premium E-commerce Platform

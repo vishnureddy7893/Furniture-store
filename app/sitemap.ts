@@ -1,63 +1,28 @@
 import { MetadataRoute } from 'next'
+import { products } from '@/lib/mock-data'
+
+const baseUrl = 'https://kosii.netlify.app'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://kosii.netlify.app' // Replace with your actual domain
+  const lastModified = new Date()
 
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/cart`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/checkout`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/order-success`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/track-order`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    // Add more pages as you create them
-    {
-      url: `${baseUrl}/products`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-  ]
+  const staticRoutes: MetadataRoute.Sitemap = (
+    [
+      { url: baseUrl, changeFrequency: 'monthly', priority: 1 },
+      { url: `${baseUrl}/shop`, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${baseUrl}/customize`, changeFrequency: 'monthly', priority: 0.9 },
+      { url: `${baseUrl}/portfolio`, changeFrequency: 'monthly', priority: 0.7 },
+      { url: `${baseUrl}/cart`, changeFrequency: 'monthly', priority: 0.4 },
+      { url: `${baseUrl}/track-order`, changeFrequency: 'monthly', priority: 0.4 },
+    ] satisfies MetadataRoute.Sitemap
+  ).map((route) => ({ ...route, lastModified }))
+
+  const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
+    url: `${baseUrl}/shop/${product.slug}`,
+    lastModified,
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }))
+
+  return [...staticRoutes, ...productRoutes]
 }
